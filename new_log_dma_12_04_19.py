@@ -404,9 +404,10 @@ try:
         if input_state == GPIO.LOW and count == 1:
             state_flag = 0
             count = 0
+            platform_flag = 0
             print('Ожидание сигнала...\n')
 
-        if input_state == GPIO.HIGH and state_flag == 0:
+        if input_state == GPIO.HIGH and state_flag == 0 and platform_flag == 0:
             while True:
 
                 start_time = time.time()
@@ -415,7 +416,6 @@ try:
                 if input_state == GPIO.LOW or platform_flag == 1:
                     state_flag = 1
                     count = 1
-                    platform_flag = 0
                     break
 
                 function_to_move = 0
