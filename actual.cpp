@@ -112,7 +112,7 @@ vector<vector<int>> processFrame(Mat &frame)
 
             // Определяем, каких пикселей больше - чёрных или белых
             Scalar meanValue = mean(part);
-            if (meanValue[0] > 135)
+            if (meanValue[0] > 125)
             {
                 binaryMatrix[i][j] = 1;
             }

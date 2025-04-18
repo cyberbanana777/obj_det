@@ -97,9 +97,47 @@ def go_to_line(black_objects_roi):
 pred_norm_x_roi = 0
 
 
+def corection_way_center(demention, max_sum_row, matrix):
+    global function_to_move
+    full_row = -1
+    central_row = demention//2 - 1
+
+    for i in range(demention):
+        count = 0
+        for el in range(demention):
+            count += matrix[i][el]
+        print(count)
+        if count <= max_sum_row:
+            full_row = i
+        
+    print('DEBAG 122 full_row:', full_row)
+
+    if full_row >= 0 and full_row != central_row:
+        if full_row > central_row:
+            function_to_move = 13
+        elif full_row < central_row:
+            function_to_move = 14
+
+        correction_speed_to_right_wheels = 0
+        correction_speed_to_left_wheels = 0
+        function_to_grab = 0
+
+        data_to_arduino = "$" + str(function_to_move) + ";" + str(function_to_grab) + ";" + \
+            str(correction_speed_to_right_wheels) + ";" + \
+            str(correction_speed_to_left_wheels) + ";#"
+
+        ser.write(data_to_arduino.encode('utf-8'))
+        print(f'Message sent to serial: {data_to_arduino}')
+        return 1
+    elif full_row == -1 or full_row == central_row:
+        return 0
+    else:
+        return 0
+
+
 def corection_way():
     global pred_norm_x_roi
-    limit = 0.03
+    limit = 0.06
     if black_objects_roi != []:
 
         if len(black_objects_roi) == 1:
@@ -144,11 +182,12 @@ def corection_way():
         print(f'Message sent to serial: {data_to_arduino}')
         return 1
 
-def find_isolated_regions(matrix):
-    if not matrix or len(matrix) != 7 or any(len(row) != 7 for row in matrix):
+
+def find_isolated_regions(matrix, demention):
+    if not matrix or len(matrix) != demention or any(len(row) != demention for row in matrix):
         return 0
 
-    rows, cols = 7, 7
+    rows, cols = demention, demention
     count = 0
     # Создаем копию матрицы для визуализации
     visualization = [row.copy() for row in matrix]
@@ -169,9 +208,10 @@ def find_isolated_regions(matrix):
         for j in range(cols):
             if visualization[i][j] == 1:
                 size = dfs(i, j, marker=count + 2)  # Маркеры: 2, 3, 4...
-                if size > 3:
+                if size > 4:
                     count += 1
     return count
+
 
 def recognize_shape(id_matrix, black_objects, matrix):
     line_recognize_flag = 1
@@ -212,9 +252,9 @@ def recognize_shape(id_matrix, black_objects, matrix):
         #     if id_matrix == i:
         #         return 'platform'
 
-        found_regions = find_isolated_regions(matrix)
-        
-        print('DEBAG 216: found_regions',matrix, found_regions)
+        found_regions = find_isolated_regions(matrix, 11)
+
+        print('DEBAG 216: found_regions', matrix, found_regions)
 
         if line_width < width <= platform_max_widht and height <= platform_max_height and -displaced_platform < x < displaced_platform and -90 < y < -20:
             return 'platform'
@@ -223,15 +263,15 @@ def recognize_shape(id_matrix, black_objects, matrix):
 
         sum_4_line_matrix = 0
         sum_3_line_matrix = 0
-        line_matrix = False
-        for el in matrix[3]:
-            sum_4_line_matrix += el
-        print('DEBAG: sum_4_line', sum_4_line_matrix)
-        for el in matrix[4]:
-            sum_3_line_matrix += el
-        print('DEBAG: sum_3_line', sum_3_line_matrix)
-        if sum_3_line_matrix < 4 or sum_4_line_matrix < 4:
-            line_matrix = True
+        line_matrix = True
+        #for el in matrix[3]:
+        #    sum_4_line_matrix += el
+        #print('DEBAG: sum_4_line', sum_4_line_matrix)
+        #for el in matrix[4]:
+        #    sum_3_line_matrix += el
+        #print('DEBAG: sum_3_line', sum_3_line_matrix)
+        #if sum_3_line_matrix < 4 or sum_4_line_matrix < 4:
+        #    line_matrix = True
 
         if width > line_width and x < -displaced_x and line_matrix == True:
             print('letf')
@@ -260,6 +300,7 @@ def recognize_shape(id_matrix, black_objects, matrix):
         else:
             return 'unknown'
 
+
 def way_function(shape, color, do_color):
     global platform_flag
     function_to_move = 0
@@ -270,7 +311,7 @@ def way_function(shape, color, do_color):
     # elif ciolor == 'Blue' and do_color:
     #     # function_to_move = 9
     #     pass
-    # elif color == 'Red' and shape == 'dead_end':
+    # elif coloru == 'Red' and shape == 'dead_end':
     #     function_to_move = 3
     # elif color == 'Red' and shape == 'right_turn':
     #     function_to_move = 5
@@ -294,7 +335,7 @@ def way_function(shape, color, do_color):
     elif shape == 'T_crossroad':
         function_to_move = 1
     elif shape == 'X_crossroad':
-        function_to_move = 2
+        function_to_move = 1
     elif shape == 'platform':  # было добавлено
         function_to_move = 7
 
@@ -390,6 +431,7 @@ count = 0
 platform_flag = 0
 
 corect_flag = 0
+corect_flag_center = 0
 wait_flag = 0
 mess_flag = 0
 test_flag = 0  # !!!!!!!!!!!!!!!!!!!!! TEST !!!!!!!!!!!!!!!!!!!!
@@ -423,7 +465,7 @@ try:
                 start_time = time.time()
 
                 input_state = GPIO.input(17)
-                
+
                 if input_state == GPIO.LOW or platform_flag == 1:
                     state_flag = 1
                     count = 1
@@ -444,7 +486,7 @@ try:
                 print('Corect_flag:', corect_flag)
                 print('Wait_flag:', wait_flag)
                 print('Mess_flag:', mess_flag)
-            
+                print('Corect_flag_center', corect_flag_center)
 
                 # получение данных с камеры
                 read_dma()
@@ -489,7 +531,7 @@ try:
                 # блок логики ¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬
 
                 # Распознование формы и цвета
-                if corect_flag == 0 and wait_flag == 0:
+                if corect_flag == 0 and corect_flag_center == 0 and wait_flag == 0:
                     if color_objects != []:
                         color = recognize_color(color_objects)
                     print(f'Color: {color}')
@@ -501,19 +543,25 @@ try:
                     print(f'Shape: {shape}')
 
                     if (shape != 0 and shape != 'unknown' and shape != 'line') or (color != 0 and do_color == 1):
-                        corect_flag = 1  # change with debug
-                        mess_flag = 1  # change with debug
+                        corect_flag = 1
+                        mess_flag = 1
+                        corect_flag_center = 1
 
                         if test_flag == 1:
                             corect_flag = 0  # change with debug
                             mess_flag = 0  # change with debug
+                            corect_flag_center = 0
 
                 # корректировка положения макленькими поворотами
                 if corect_flag == 1 and wait_flag == 0 and test_flag == 0:
                     corect_flag = corection_way()
 
+                # корректировка положения макленькими шажками
+                if corect_flag_center == 1 and wait_flag == 0 and test_flag == 0:
+                    corect_flag_center = corection_way_center(11, 8, matrix)
+
                 # отправка сообщения на ардуино
-                if corect_flag == 0 and wait_flag == 0 and mess_flag == 1 and test_flag == 0:
+                if corect_flag == 0 and corect_flag_center == 0 and wait_flag == 0 and mess_flag == 1 and test_flag == 0:
 
                     shape = recognize_shape(id_matrix, black_objects, matrix)
                     function_to_move, function_to_grab = way_function(
@@ -530,7 +578,7 @@ try:
                     time_send_messege = time.time()
                     wait_flag = 1
                     mess_flag = 0
-                elif corect_flag == 0 and wait_flag == 0 and mess_flag == 0 and test_flag == 0:
+                elif corect_flag == 0 and corect_flag_center == 0 and wait_flag == 0 and mess_flag == 0 and test_flag == 0:
 
                     # ПДи
                     if black_objects_roi != []:
@@ -550,12 +598,12 @@ try:
                 if test_flag == 1:
                     time.sleep(1)
                 else:
-                    time.sleep(0.025)  # 0.05
+                    time.sleep(0.035)  # 0.05
 
                 print('Time:', time.time() - start_time)
                 print('')
                 print('Corect_flag:', corect_flag)
-                print('Wait_flag:', wait_flag)        
+                print('Wait_flag:', wait_flag)
                 print('Mess_flag:', mess_flag)
                 print('')
 
@@ -576,3 +624,4 @@ finally:
 
     shm.close()  # Закрываем DMA
     GPIO.cleanup()  # Очистка настроек GPIO
+
