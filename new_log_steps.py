@@ -54,7 +54,7 @@ color_objects_central = []
 black_objects = []
 matrix = []
 id_matrix = ''
-DEMENTION = 9
+DEMENTION = 15
 
 # считывает скорость для моторов
 
@@ -140,7 +140,7 @@ def corection_way_center(demention, max_sum_row, matrix):
 def corection_way():
     global pred_norm_x_roi
     global wait_flag
-    limit = 0.06
+    limit = 0.05
     if black_objects_roi != []:
 
         if len(black_objects_roi) == 1:
@@ -597,14 +597,14 @@ try:
                     ser.write(data_to_arduino.encode('utf-8'))
                     print(f'Message sent to serial: {data_to_arduino}')
 
-                if (data_from_arduino == 'OK' or time.time() - time_send_messege > 8) and wait_flag == 1 and test_flag == 0:
+                if (data_from_arduino == 'OK' or time.time() - time_send_messege > 3) and wait_flag == 1 and test_flag == 0:
                     corect_flag = 1
                     wait_flag = 0
 
                 if test_flag == 1:
                     time.sleep(1)
                 else:
-                    time.sleep(0.035)  # 0.05
+                    time.sleep(0.05)  # 0.05
 
                 print('Time:', time.time() - start_time)
                 print('')
