@@ -33,7 +33,7 @@ int WIDTH_ROI = 640;
 int HEIGHT_ROI = 10;
 
 // Настройка матриц
-int DEMENTION = 11;
+int DEMENTION = 9;
 
 // Настройка видео
 const bool SHOW_VIDEO_WINDOWS = false;
