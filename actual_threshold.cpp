@@ -33,7 +33,7 @@ int WIDTH_ROI = 640;
 int HEIGHT_ROI = 10;
 
 // Настройка матриц
-int DEMENTION = 11;
+int DEMENTION = 9;
 
 // Настройка видео
 const bool SHOW_VIDEO_WINDOWS = false;
@@ -90,11 +90,7 @@ vector<vector<int>> processFrame(Mat &frame)
 {
     // Преобразуем кадр в чёрно-белый
     Mat gray;
-    Mat grayBin;
     cvtColor(frame, gray, COLOR_BGR2GRAY);
-
-    double otsu_thresh_val = threshold(gray, grayBin, 0, 255, THRESH_BINARY | THRESH_OTSU);
-    
 
     // Размеры кадра
     int height = gray.rows;
@@ -114,14 +110,11 @@ vector<vector<int>> processFrame(Mat &frame)
         {
             // Вырезаем часть кадра
             Rect roi(j * partWidth, i * partHeight, partWidth, partHeight);
-            
-	    Mat part = grayBin(roi);
+            Mat part = gray(roi);
 
-            // Вычисляем порог Оцу для части
-            // Можно использовать среднее значение бинаризованной части для решения
-            Scalar meanValue = mean(part);
             // Определяем, каких пикселей больше - чёрных или белых
-            if (meanValue[0] > 127)
+            Scalar meanValue = mean(part);
+            if (meanValue[0] > THRESHOLD)
             {
                 binaryMatrix[i][j] = 1;
             }

@@ -54,7 +54,7 @@ color_objects_central = []
 black_objects = []
 matrix = []
 id_matrix = ''
-
+DEMENTION = 9
 
 # считывает скорость для моторов
 
@@ -99,8 +99,9 @@ pred_norm_x_roi = 0
 
 def corection_way_center(demention, max_sum_row, matrix):
     global function_to_move
+    global wait_flag
     full_row = -1
-    central_row = demention//2 - 1
+    central_row = demention//2
 
     for i in range(demention):
         count = 0
@@ -109,7 +110,7 @@ def corection_way_center(demention, max_sum_row, matrix):
         print(count)
         if count <= max_sum_row:
             full_row = i
-        
+
     print('DEBAG 122 full_row:', full_row)
 
     if full_row >= 0 and full_row != central_row:
@@ -127,6 +128,7 @@ def corection_way_center(demention, max_sum_row, matrix):
             str(correction_speed_to_left_wheels) + ";#"
 
         ser.write(data_to_arduino.encode('utf-8'))
+        wait_flag = 1
         print(f'Message sent to serial: {data_to_arduino}')
         return 1
     elif full_row == -1 or full_row == central_row:
@@ -137,6 +139,7 @@ def corection_way_center(demention, max_sum_row, matrix):
 
 def corection_way():
     global pred_norm_x_roi
+    global wait_flag
     limit = 0.06
     if black_objects_roi != []:
 
@@ -160,6 +163,7 @@ def corection_way():
                 str(correction_speed_to_left_wheels) + ";#"
 
             ser.write(data_to_arduino.encode('utf-8'))
+            wait_flag = 1
             print(f'Message sent to serial: {data_to_arduino}')
 
             pred_norm_x_roi = x_cor
@@ -179,6 +183,7 @@ def corection_way():
             str(correction_speed_to_left_wheels) + ";#"
 
         ser.write(data_to_arduino.encode('utf-8'))
+        wait_flag = 1
         print(f'Message sent to serial: {data_to_arduino}')
         return 1
 
@@ -252,7 +257,7 @@ def recognize_shape(id_matrix, black_objects, matrix):
         #     if id_matrix == i:
         #         return 'platform'
 
-        found_regions = find_isolated_regions(matrix, 11)
+        found_regions = find_isolated_regions(matrix, DEMENTION)
 
         print('DEBAG 216: found_regions', matrix, found_regions)
 
@@ -264,13 +269,13 @@ def recognize_shape(id_matrix, black_objects, matrix):
         sum_4_line_matrix = 0
         sum_3_line_matrix = 0
         line_matrix = True
-        #for el in matrix[3]:
+        # for el in matrix[3]:
         #    sum_4_line_matrix += el
-        #print('DEBAG: sum_4_line', sum_4_line_matrix)
-        #for el in matrix[4]:
+        # print('DEBAG: sum_4_line', sum_4_line_matrix)
+        # for el in matrix[4]:
         #    sum_3_line_matrix += el
-        #print('DEBAG: sum_3_line', sum_3_line_matrix)
-        #if sum_3_line_matrix < 4 or sum_4_line_matrix < 4:
+        # print('DEBAG: sum_3_line', sum_3_line_matrix)
+        # if sum_3_line_matrix < 4 or sum_4_line_matrix < 4:
         #    line_matrix = True
 
         if width > line_width and x < -displaced_x and line_matrix == True:
@@ -323,7 +328,7 @@ def way_function(shape, color, do_color):
         function_to_move = 7
         platform_flag = 1
     elif shape == 'dead_end':
-        function_to_move = 4
+        pass
     elif shape == 'right_turn':
         function_to_move = 1
     elif shape == 'left_turn':
@@ -558,7 +563,8 @@ try:
 
                 # корректировка положения макленькими шажками
                 if corect_flag_center == 1 and wait_flag == 0 and test_flag == 0:
-                    corect_flag_center = corection_way_center(11, 8, matrix)
+                    corect_flag_center = corection_way_center(
+                        DEMENTION, DEMENTION//2 + 1, matrix)
 
                 # отправка сообщения на ардуино
                 if corect_flag == 0 and corect_flag_center == 0 and wait_flag == 0 and mess_flag == 1 and test_flag == 0:
