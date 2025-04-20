@@ -45,12 +45,12 @@ function_to_grab = 0  # 1 - схватить, 2 - переставить, 3 - п
 correction_speed_to_right_wheels = 0
 correction_speed_to_left_wheels = 0
 # на каком расстояни роботот должен остановиться, что бы схватить цилиндр с небольшим допуском, поменять!
-max_distance_for_color_obj = 31
+max_distance_for_color_obj = 40
 # Для ПДа
 pred_norm_x = 0
 # обновляющиеся массивы объектов
 black_objects_roi = []
-color_objects_central = []
+color_objects = []
 black_objects = []
 matrix = []
 id_matrix = ''
@@ -141,12 +141,18 @@ def corection_way():
     global pred_norm_x_roi
     global wait_flag
     limit = 0.05
-    if black_objects_roi != []:
 
-        if len(black_objects_roi) == 1:
-            x_cor = black_objects_roi[0][5]
-        elif len(black_objects_roi) > 1:
-            obj = min(black_objects_roi, key=lambda x: (x[3])**2 + (x[4])**2)
+    if color == 'Green':
+        objects = color_objects
+    else:
+        objects = black_objects_roi
+
+    if objects != []:
+
+        if len(objects) == 1:
+            x_cor = objects[0][5]
+        elif len(objects) > 1:
+            obj = min(objects, key=lambda x: (x[3])**2 + (x[4])**2)
             x_cor = obj[5]
 
         if -limit <= x_cor <= limit:
@@ -263,7 +269,7 @@ def recognize_shape(id_matrix, black_objects, matrix):
 
         if line_width < width <= platform_max_widht and height <= platform_max_height and -displaced_platform < x < displaced_platform and -90 < y < -20:
             return 'platform'
-        if -displaced_platform < x < displaced_platform and -90 < y < -20 and width > line_width and found_regions == 1:
+        if 640 > width > line_width and 480 > height > 300 and found_regions == 1:
             return 'platform'
 
         sum_4_line_matrix = 0
@@ -280,28 +286,28 @@ def recognize_shape(id_matrix, black_objects, matrix):
 
         if width > line_width and x < -displaced_x and line_matrix == True:
             print('letf')
-            if found_regions == 2:
+            if found_regions == 2 and height < 480:
                 return 'left_turn'
             elif found_regions == 3:
                 return 'left_E_crossroad'
             else:
-                return 'left_turn'
+                return 'unknown'
         elif width > line_width and x > displaced_x and line_matrix == True:
             print('right')
-            if found_regions == 2:
+            if found_regions == 2 and height < 480:
                 return 'right_turn'
             elif found_regions == 3:
                 return 'right_E_crossroad'
             else:
-                return 'right_turn'
+                return 'unknown'
         elif line_matrix == True and width > line_width:
             print('center')
-            if found_regions == 3:
+            if found_regions == 3 and height < 480:
                 return 'T_crossroad'
             if found_regions == 4:
                 return 'X_crossroad'
             else:
-                return 'right_turn'
+                return 'unknow'
         else:
             return 'unknown'
 
@@ -349,6 +355,8 @@ def way_function(shape, color, do_color):
 
 
 def recognize_color(color_objects):
+    if len(color_objects) == 0:
+        return 0
     cylinder = min(color_objects, key=lambda x: (x[3])**2 + (x[4])**2)
     color = cylinder[0]
     if color == 'Green':
@@ -532,6 +540,8 @@ try:
                 except ValueError:
                     print('Uncorrect messege or text messege')
 
+                print("DO_COLOR:", do_color)
+
                 # конец блок получения сообщения с ардуино ¬¬¬¬¬¬¬¬¬¬¬¬¬¬
 
                 # блок логики ¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬
@@ -571,8 +581,12 @@ try:
                 if corect_flag == 0 and corect_flag_center == 0 and wait_flag == 0 and mess_flag == 1 and test_flag == 0:
 
                     shape = recognize_shape(id_matrix, black_objects, matrix)
+                    color = recognize_color(color_objects)
                     function_to_move, function_to_grab = way_function(
                         shape, color, do_color)
+
+                    if function_to_move == 0:
+                        wait_flag = 0
 
                     data_to_arduino = "$" + str(function_to_move) + ";" + str(function_to_grab) + ";" + \
                         str(correction_speed_to_right_wheels) + ";" + \

@@ -40,8 +40,6 @@ const bool SHOW_VIDEO_WINDOWS = false;
 
 const int BUFFER_SIZE = 512;
 
-const int THRESHOLD = 125;
-
 // Структура для хранения диапазонов цветов
 struct ColorRange
 {
@@ -134,6 +132,7 @@ vector<vector<int>> processFrame(Mat &frame)
 
     return binaryMatrix;
 }
+
 
 int main()
 {
@@ -307,7 +306,7 @@ int main()
                 stringstream ss;
 
                 Point frameCenter(frame.cols / 2, frame.rows / 2); // Центр кадра
-                double minDistance = std::numeric_limits<double>::max();
+                double minDistance = numeric_limits<double>::max();
                 ContourInfo closestContour;
 
                 for (const auto &contourInfo : all_contours)
@@ -315,11 +314,39 @@ int main()
                     Rect boundingBox = boundingRect(contourInfo.contour);
                     int width = boundingBox.width;
                     int height = boundingBox.height;
+		    int x = boundingBox.x;
+		    int y = boundingBox.y;
+
+		    int rect_area = width * height;
+
+		    // Получаем минимальный прямоугольник с поворотом
+    		    RotatedRect min_rect = minAreaRect(contourInfo.contour);
+
+		        // Получаем 4 точки этого прямоугольника
+    		    Point2f box_points[4];
+                    min_rect.points(box_points);
+
+		    // Преобразуем точки в вектор Point для вычисления площади контура
+		    vector<Point> box;
+		    for (int i = 0; i < 4; i++)
+		    {
+		        box.push_back(box_points[i]);
+		    }
+
+		    // Вычисляем площадь "поворотного" прямоугольника
+		    double rotated_rect_area = contourArea(box);
+
+    		    // Вычисляем площадь исходного контура
+    		    double contour_area = contourArea(contourInfo.contour);
+
+		    // Вычисляем коэффициенты, учитывая деление на ноль
+    		    double ratio_standard = (rect_area > 0) ? (contour_area / rect_area) : 0;
+
 
                     string color_detected = contourInfo.color; // Используем идентификатор цвета
-                    // Условие для игнорирования контуров с маленькими размерами
-                    if ((width >= 70 && height >= 70 && contourArea(contourInfo.contour) > 5000) || (color_detected == "Black_roi" && contourArea(contourInfo.contour) > 30))
-			    
+                    
+		    // Условие для игнорирования контуров с маленькими размерами
+                    if ((width >= 70 && height >= 70 && contourArea(contourInfo.contour) > 5000) || (color_detected == "Black_roi" && contourArea(contourInfo.contour) > 30))	    
                     {
                         int y_buff = 0;
                         if (color_detected == "Black_roi")
@@ -330,11 +357,11 @@ int main()
                         Mat path = frame;
 
                         Point center(boundingBox.x + width / 2,
-                                     boundingBox.y + height / 2 + y_buff);
-                        drawCrosshair(path, center);
+				     boundingBox.y + height / 2 + y_buff);
 
                         if (SHOW_VIDEO_WINDOWS)
                         {
+                            drawCrosshair(path, center);
                             double distance = norm(center - frameCenter); // Расстояние до центра
                             if (distance < minDistance)
                             {
@@ -351,7 +378,9 @@ int main()
                            << center.y
                            << ","
                            << ((float)center.x - frame.cols / 2) / (frame.cols / 2)
-                           << ";";
+//                           << ","
+//			   << ratio_standard
+			   << ";";
 
                         if (SHOW_VIDEO_WINDOWS)
                         {
