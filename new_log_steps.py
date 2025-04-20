@@ -310,8 +310,8 @@ def way_function(shape, color, do_color):
     global platform_flag
     function_to_move = 0
     function_to_grab = 0
-    # if color == 'Green' and do_color:
-    #     # function_to_move = 8
+    if color == 'Green':
+        function_to_move = 8
     #     pass
     # elif ciolor == 'Blue' and do_color:
     #     # function_to_move = 9
@@ -324,7 +324,7 @@ def way_function(shape, color, do_color):
     #     function_to_move = 6
     # elif color == 'Red' and shape == 'right_T_crossroad':
     #     function_to_move = 1
-    if shape == 'platform' and color != 'Green':
+    elif shape == 'platform' and color != 'Green':
         function_to_move = 7
         platform_flag = 1
     elif shape == 'dead_end':
@@ -334,16 +334,17 @@ def way_function(shape, color, do_color):
     elif shape == 'left_turn':
         function_to_move = 2
     elif shape == 'right_E_crossroad':
-        function_to_move = 1
+        #function_to_move = 1
+        pass
     elif shape == 'left_E_crossroad':
-        function_to_move = 2
+        #function_to_move = 2
+        pass
     elif shape == 'T_crossroad':
         function_to_move = 1
     elif shape == 'X_crossroad':
-        function_to_move = 1
-    elif shape == 'platform':  # было добавлено
-        function_to_move = 7
-
+        #function_to_move = 1
+        pass
+    
     return function_to_move, function_to_grab
 
 
@@ -471,7 +472,7 @@ try:
 
                 input_state = GPIO.input(17)
 
-                if input_state == GPIO.LOW or platform_flag == 1:
+                if input_state == GPIO.LOW and platform_flag == 1:
                     state_flag = 1
                     count = 1
                     break
@@ -604,7 +605,7 @@ try:
                 if test_flag == 1:
                     time.sleep(1)
                 else:
-                    time.sleep(0.05)  # 0.05
+                    time.sleep(0.06)  # 0.05
 
                 print('Time:', time.time() - start_time)
                 print('')

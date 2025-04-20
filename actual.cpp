@@ -202,7 +202,7 @@ int main()
     // Определение диапазонов цветов в HSV
     ColorRange red1 = {Scalar(0, 50, 50), Scalar(10, 255, 255)};
     ColorRange red2 = {Scalar(160, 50, 50), Scalar(180, 255, 255)};
-    ColorRange green = {Scalar(56, 159, 97), Scalar(71, 255, 255)};
+    ColorRange green = {Scalar(50, 135, 61), Scalar(102, 255, 255)};
     ColorRange blue = {Scalar(75, 168, 33), Scalar(104, 255, 210)};
     ColorRange black = {Scalar(0, 0, 0), Scalar(180, 255, 88)};
 
