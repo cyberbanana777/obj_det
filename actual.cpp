@@ -64,8 +64,7 @@ void drawCrosshair(Mat &frame, Point center)
 
 // Функция для вывода диапазонов цветов
 void printColorRanges(const ColorRange &red1, const ColorRange &red2,
-                      const ColorRange &green, const ColorRange &blue,
-                      const ColorRange &black)
+                      const ColorRange &green, const ColorRange &black) // убрано const ColorRange &blue
 {
     cout << "Red Color Ranges:\n"
          << "Lower Red1: " << red1.lower << "\n"
@@ -76,8 +75,8 @@ void printColorRanges(const ColorRange &red1, const ColorRange &red2,
          << "Lower Green: " << green.lower << "\n"
          << "Upper Green: " << green.upper << "\n\n"
          << "Blue Color Ranges:\n"
-         << "Lower Blue: " << blue.lower << "\n"
-         << "Upper Blue: " << blue.upper << "\n\n"
+         //<< "Lower Blue: " << blue.lower << "\n"
+         //<< "Upper Blue: " << blue.upper << "\n\n"
          << "Black Color Ranges:\n"
          << "Lower Black: " << black.lower << "\n"
          << "Upper Black: " << black.upper << endl
@@ -202,11 +201,11 @@ int main()
     ColorRange red1 = {Scalar(0, 50, 50), Scalar(10, 255, 255)};
     ColorRange red2 = {Scalar(160, 50, 50), Scalar(180, 255, 255)};
     ColorRange green = {Scalar(50, 135, 61), Scalar(102, 255, 255)};
-    ColorRange blue = {Scalar(75, 168, 33), Scalar(104, 255, 210)};
+    //ColorRange blue = {Scalar(75, 168, 33), Scalar(104, 255, 210)};
     ColorRange black = {Scalar(0, 0, 0), Scalar(180, 255, 88)};
 
     // Вывод диапазонов цветов в консоль
-    printColorRanges(red1, red2, green, blue, black);
+    printColorRanges(red1, red2, green, black); // !убрано blue
 
     while (true)
     {
@@ -249,7 +248,7 @@ int main()
                 inRange(hsv, red1.lower, red1.upper, mask_red1);
                 inRange(hsv, red2.lower, red2.upper, mask_red2);
                 inRange(hsv, green.lower, green.upper, mask_green);
-                inRange(hsv, blue.lower, blue.upper, mask_blue);
+                //inRange(hsv, blue.lower, blue.upper, mask_blue);
 
                 // Черная маска
                 inRange(hsv, black.lower, black.upper, mask_black);
@@ -269,13 +268,13 @@ int main()
                 // Нахождение контуров в масках
                 vector<vector<Point>> contours_red;
                 vector<vector<Point>> contours_green;
-                vector<vector<Point>> contours_blue;
+                //vector<vector<Point>> contours_blue;
                 vector<vector<Point>> contours_black;
                 vector<vector<Point>> contours_black_roi;
 
                 findContours(mask_red, contours_red, RETR_EXTERNAL, CHAIN_APPROX_SIMPLE);
                 findContours(mask_green, contours_green, RETR_EXTERNAL, CHAIN_APPROX_SIMPLE);
-                findContours(mask_blue, contours_blue, RETR_EXTERNAL, CHAIN_APPROX_SIMPLE);
+                //findContours(mask_blue, contours_blue, RETR_EXTERNAL, CHAIN_APPROX_SIMPLE);
                 findContours(mask_black, contours_black, RETR_EXTERNAL, CHAIN_APPROX_SIMPLE);
                 findContours(mask_black_roi, contours_black_roi, RETR_EXTERNAL, CHAIN_APPROX_SIMPLE);
                 // Объединение всех контуров в один вектор с идентификатором цвета
@@ -289,10 +288,10 @@ int main()
                 {
                     all_contours.push_back({contour, "Green"});
                 }
-                for (const auto &contour : contours_blue)
-                {
-                    all_contours.push_back({contour, "Blue"});
-                }
+                //for (const auto &contour : contours_blue)
+                //{
+                //    all_contours.push_back({contour, "Blue"});
+                //}
                 for (const auto &contour : contours_black)
                 {
                     all_contours.push_back({contour, "Black"});
