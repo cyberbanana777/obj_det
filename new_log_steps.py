@@ -55,6 +55,7 @@ black_objects = []
 matrix = []
 id_matrix = ''
 DEMENTION = 15
+WAIT_TIME = 2
 
 # считывает скорость для моторов
 
@@ -72,10 +73,10 @@ def go_to_line(black_objects_roi):
         x = obj[3]
         norm_x = obj[5]
         width = obj[1]
-        if norm_x > 0.1:
-            corect_flag = 1
+    if norm_x > 0.05:
+        corect_flag = 1
 
-    Kp = 1.4
+    Kp = 1.8
     Kd = 0.2
     if width < 150:
         if (norm_x > 0 and pred_norm_x < 0) or (norm_x < 0 and pred_norm_x > 0):
@@ -332,7 +333,6 @@ def way_function(shape, color, do_color):
     #     function_to_move = 1
     elif shape == 'platform' and color != 'Green':
         function_to_move = 7
-        platform_flag = 1
     elif shape == 'dead_end':
         pass
     elif shape == 'right_turn':
@@ -433,6 +433,7 @@ GPIO.setup(17, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
 set_mus = set()
 mes_time = 0
 mes_delay = 0
+wait_time = WAIT_TIME
 
 count_crosses = 0
 count_E_crosses = 0
@@ -480,7 +481,7 @@ try:
 
                 input_state = GPIO.input(17)
 
-                if input_state == GPIO.LOW and platform_flag == 1:
+                if input_state == GPIO.LOW or platform_flag == 1:
                     state_flag = 1
                     count = 1
                     break
@@ -585,9 +586,6 @@ try:
                     function_to_move, function_to_grab = way_function(
                         shape, color, do_color)
 
-                    if function_to_move == 0:
-                        wait_flag = 0
-
                     data_to_arduino = "$" + str(function_to_move) + ";" + str(function_to_grab) + ";" + \
                         str(correction_speed_to_right_wheels) + ";" + \
                         str(correction_speed_to_left_wheels) + ";#"
@@ -597,6 +595,16 @@ try:
                     time.sleep(0.05)
 
                     time_send_messege = time.time()
+
+                    if function_to_move == 0:
+                        wait_time = 1
+                    elif function_to_move == 8:
+                        wait_time = 8
+                    elif function_to_move == 7:
+                        platform_flag = 1
+                    else:
+                        wait_time = WAIT_TIME
+
                     wait_flag = 1
                     mess_flag = 0
                 elif corect_flag == 0 and corect_flag_center == 0 and wait_flag == 0 and mess_flag == 0 and test_flag == 0:
@@ -612,7 +620,8 @@ try:
                     ser.write(data_to_arduino.encode('utf-8'))
                     print(f'Message sent to serial: {data_to_arduino}')
 
-                if (data_from_arduino == 'OK' or time.time() - time_send_messege > 3) and wait_flag == 1 and test_flag == 0:
+                
+                if (data_from_arduino == 'OK' or time.time() - time_send_messege >= wait_time) and wait_flag == 1 and test_flag == 0:
                     corect_flag = 1
                     wait_flag = 0
 
@@ -625,6 +634,8 @@ try:
                 print('')
                 print('Corect_flag:', corect_flag)
                 print('Wait_flag:', wait_flag)
+                print('WAIT_TIME:', wait_time)
+                print('Time_from_messege:', round(time.time() - time_send_messege, 4))
                 print('Mess_flag:', mess_flag)
                 print('')
 
