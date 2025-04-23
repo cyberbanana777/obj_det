@@ -198,10 +198,9 @@ int main()
     cap.set(CAP_PROP_FRAME_HEIGHT, 480);
 
     // Определение диапазонов цветов в HSV
-    ColorRange red1 = {Scalar(0, 50, 50), Scalar(10, 255, 255)};
+    ColorRange red1 = {Scalar(165, 134, 114), Scalar(184, 201, 236)};
     ColorRange red2 = {Scalar(160, 50, 50), Scalar(180, 255, 255)};
     ColorRange green = {Scalar(50, 135, 61), Scalar(102, 255, 255)};
-    //ColorRange blue = {Scalar(75, 168, 33), Scalar(104, 255, 210)};
     ColorRange black = {Scalar(0, 0, 0), Scalar(180, 255, 88)};
 
     // Вывод диапазонов цветов в консоль
@@ -242,11 +241,11 @@ int main()
                 cvtColor(roi, hsv_roi, COLOR_BGR2HSV);
 
                 // Создание масок для каждого цвета
-                Mat mask_red1, mask_red2, mask_green, mask_blue;
+                Mat mask_red, mask_red2, mask_green, mask_blue;
                 Mat mask_black, mask_black_roi;
 
-                inRange(hsv, red1.lower, red1.upper, mask_red1);
-                inRange(hsv, red2.lower, red2.upper, mask_red2);
+                inRange(hsv, red1.lower, red1.upper, mask_red);
+                //inRange(hsv, red2.lower, red2.upper, mask_red2);
                 inRange(hsv, green.lower, green.upper, mask_green);
                 //inRange(hsv, blue.lower, blue.upper, mask_blue);
 
@@ -255,7 +254,7 @@ int main()
                 inRange(hsv_roi, black.lower, black.upper, mask_black_roi);
 
                 // Объединение масок красного цвета
-                Mat mask_red = mask_red1 | mask_red2;
+                //Mat mask_red = mask_red1 | mask_red2;
 			
 		// Уменьшение шума (размытие)
 		int size = 15;

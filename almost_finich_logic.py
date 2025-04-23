@@ -59,7 +59,7 @@ black_objects = []
 matrix = []
 id_matrix = ''
 DEMENTION = 15
-WAIT_TIME = 3.5
+WAIT_TIME = 2.5
 
 # считывает скорость для моторов
 
@@ -106,7 +106,7 @@ def corection_way_center(demention, max_sum_row, matrix):
     global function_to_move
     global wait_flag
     full_row = -1
-    central_row = demention//2 + 1
+    central_row = demention//2
 
     for i in range(demention):
         count = 0
@@ -338,8 +338,8 @@ def way_function(shape, color, do_color):
         # elif ciolor == 'Blue' and do_color:
         #     # function_to_move = 9
         #     pass
-        # elif coloru == 'Red' and shape == 'dead_end':
-        #     function_to_move = 3
+        elif color == 'Red':
+            function_to_move = 5
         # elif color == 'Red' and shape == 'right_turn':
         #     function_to_move = 5
         # elif color == 'Red' and shape == 'left_turn':
@@ -349,17 +349,17 @@ def way_function(shape, color, do_color):
         elif shape == 'platform' and color != 'Green':
             function_to_move = 7
         elif shape == 'dead_end':
-            pass
+            function_to_move = 4
         elif shape == 'right_turn':
             function_to_move = 1
         elif shape == 'left_turn':
             function_to_move = 2
         elif shape == 'right_E_crossroad':
-            # function_to_move = 1
-            pass
+            function_to_move = 1
+            # pass
         elif shape == 'left_E_crossroad':
-            # function_to_move = 2
-            pass
+            function_to_move = 2
+            #pass
         elif shape == 'T_crossroad':
             function_to_move = 1
         elif shape == 'X_crossroad':
@@ -373,8 +373,11 @@ def way_function(shape, color, do_color):
             flag_way_to_finish = 0
             flag_way_with_green = 1
             count_right_E_crossroad = 0
-        # elif coloru == 'Red':
-        #     function_to_move = 3
+        elif color == 'Red':
+            if flag_way_to_finish == 1:
+                function_to_move = 6
+            if flag_way_with_green == 1:
+                function_to_move = 5
         elif shape == 'platform' and color != 'Green':
             function_to_move = 7
         elif shape == 'dead_end':
@@ -618,8 +621,9 @@ try:
                     if (shape != 0 and shape != 'unknown' and shape != 'line') or (color != 0 and do_color == 1):
                         corect_flag = 1
                         corect_flag_center = 1
-                        if shape == 'dead_end':
+                        if shape == 'dead_end' or color == 'Green' or color == 'Red':
                             corect_flag_center = 0
+
                         mess_flag = 1
 
                         if test_flag == 1:
@@ -688,7 +692,7 @@ try:
                 if test_flag == 1:
                     time.sleep(1)
                 else:
-                    time.sleep(0.06)  # 0.05
+                    time.sleep(0.07)  # 0.05
 
                 if time.time() - platform_time >= 10 and platform_pred_flag == 1:
                     platform_flag = 1
