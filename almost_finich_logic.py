@@ -59,7 +59,7 @@ black_objects = []
 matrix = []
 id_matrix = ''
 DEMENTION = 15
-WAIT_TIME = 2.5
+WAIT_TIME = 4
 
 # считывает скорость для моторов
 
@@ -262,7 +262,7 @@ def recognize_shape(id_matrix, black_objects, matrix):
 
         if width < line_width and height == 480:
             return 'line'
-        elif width <= line_width and height < 350 and -50 < x < 50:
+        elif width <= line_width and height < 300 and -50 < x < 50:
             return 'dead_end'
 
         # for i in platform:
@@ -580,9 +580,12 @@ try:
                 # получение сообщения с ардуино ¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬¬
                 if ser.in_waiting > 0:
                     data_from_arduino = ser.readline()
-                    data_from_arduino = data_from_arduino.decode(
+                    try:
+                        data_from_arduino = data_from_arduino.decode(
                         'utf-8').strip()
-                    print(f'Message get from serial: {data_from_arduino}')
+                        print(f'Message get from serial: {data_from_arduino}')
+                    except Exception as e:
+                        print('Error arduino messege:', e)    
                 else:
                     print('No data from Arduino')
                     data_from_arduino = 0
@@ -661,7 +664,7 @@ try:
                     if function_to_move == 0:
                         wait_time = 1
                     elif function_to_move == 8:
-                        wait_time = 8
+                        wait_time = 15
                     elif function_to_move == 7:
                         platform_pred_flag = 1
                         platform_time = time.time()
