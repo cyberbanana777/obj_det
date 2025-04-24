@@ -378,6 +378,7 @@ def way_function(shape, color, do_color):
                 function_to_move = 6
             if flag_way_with_green == 1:
                 function_to_move = 5
+            pass
         elif shape == 'platform' and color != 'Green':
             function_to_move = 7
         elif shape == 'dead_end':
@@ -389,17 +390,20 @@ def way_function(shape, color, do_color):
         elif shape == 'right_E_crossroad':
             if flag_way_to_finish == 1:
                 count_right_E_crossroad += 1
-                if count_right_E_crossroad == 2:
+                if count_right_E_crossroad >= 2:
                     function_to_move = 1
 
             if flag_way_with_green == 1:
                 function_to_move = 1
+            pass
         elif shape == 'left_E_crossroad':
             if flag_way_with_green == 1:
                 function_to_move = 2
+            pass
         elif shape == 'T_crossroad':
             if flag_way_with_green == 1:
                 function_to_move = 2
+            pass
         elif shape == 'X_crossroad':
             # function_to_move = 1
             pass
@@ -507,6 +511,7 @@ test_flag = 0  # !!!!!!!!!!!!!!!!!!!!! TEST !!!!!!!!!!!!!!!!!!!!
 
 shape = 0
 time_send_messege = 0
+min_time = 0.5
 
 start_time = 0
 count_print = 0
@@ -531,6 +536,9 @@ try:
             count = 0
             platform_flag = 0
             platform_pred_flag = 0
+            flag_way_to_finish = 1
+            flag_way_with_green = 0
+            count_right_E_crossroad = 0
             print('Ожидание сигнала...\n')
 
         if input_state == GPIO.HIGH and state_flag == 0 and platform_flag == 0:
@@ -663,13 +671,18 @@ try:
 
                     if function_to_move == 0:
                         wait_time = 1
+                        min_time = 0.5
                     elif function_to_move == 8:
                         wait_time = 15
                     elif function_to_move == 7:
                         platform_pred_flag = 1
+                        min_time= 0.5
+                        wait_time = 8
                         platform_time = time.time()
                     elif function_to_move == 4:
                         wait_time = 3
+                    elif function_to_move == 11 or function_to_move == 12 or function_to_move == 13 or function_to_move == 14:
+                        min_time = 0
                     else:
                         wait_time = WAIT_TIME
 
@@ -688,7 +701,7 @@ try:
                     ser.write(data_to_arduino.encode('utf-8'))
                     print(f'Message sent to serial: {data_to_arduino}')
 
-                if (data_from_arduino == 'OK' or time.time() - time_send_messege >= wait_time) and wait_flag == 1 and test_flag == 0:
+                if ((time.time() - time_send_messege > min_time and data_from_arduino == 'OK') or (time.time() - time_send_messege >= wait_time)) and wait_flag == 1 and test_flag == 0:
                     corect_flag = 1
                     wait_flag = 0
 
