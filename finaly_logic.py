@@ -149,7 +149,7 @@ def corection_way():
 
     if color == 'Green':
         objects = color_objects
-        limit = 0.04
+        limit = 0.03
     else:
         objects = black_objects_roi
 
@@ -262,7 +262,7 @@ def recognize_shape(id_matrix, black_objects, matrix):
 
         if width < line_width and height == 480:
             return 'line'
-        elif width <= line_width and height < 300 and -50 < x < 50:
+        elif width <= line_width and height < 280 and -50 < x < 50:
             return 'dead_end'
 
         # for i in platform:
@@ -390,7 +390,6 @@ def way_function(shape, color, do_color):
         elif shape == 'right_E_crossroad':
             if flag_way_to_finish == 1:
                 count_right_E_crossroad += 1
-                print('COUNT_E_RIGHT:', count_right_E_crossroad)
                 if count_right_E_crossroad >= 2:
                     function_to_move = 1
 
@@ -512,6 +511,7 @@ test_flag = 0  # !!!!!!!!!!!!!!!!!!!!! TEST !!!!!!!!!!!!!!!!!!!!
 
 shape = 0
 time_send_messege = 0
+min_time = 0.5
 
 start_time = 0
 count_print = 0
@@ -642,14 +642,14 @@ try:
                             mess_flag = 0  # change with debug
                             corect_flag_center = 0
 
-                # корректировка положения макленькими поворотами
-                if corect_flag == 1 and wait_flag == 0 and test_flag == 0:
-                   corect_flag = corection_way()
-
                 # корректировка положения макленькими шажками
                 if corect_flag_center == 1 and wait_flag == 0 and test_flag == 0 and len(matrix) != 0:
                     corect_flag_center = corection_way_center(
                         DEMENTION, DEMENTION//2 + 1, matrix)
+
+                # корректировка положения макленькими поворотами
+                if corect_flag == 1 and wait_flag == 0 and test_flag == 0:
+                   corect_flag = corection_way()
 
                 # отправка сообщения на ардуино
                 if corect_flag == 0 and corect_flag_center == 0 and wait_flag == 0 and mess_flag == 1 and test_flag == 0:
@@ -671,13 +671,18 @@ try:
 
                     if function_to_move == 0:
                         wait_time = 1
+                        min_time = 0.5
                     elif function_to_move == 8:
-                        wait_time = 8
+                        wait_time = 15
                     elif function_to_move == 7:
                         platform_pred_flag = 1
+                        min_time= 0.5
+                        wait_time = 8
                         platform_time = time.time()
                     elif function_to_move == 4:
                         wait_time = 3
+                    elif function_to_move == 11 or function_to_move == 12 or function_to_move == 13 or function_to_move == 14:
+                        min_time = 0
                     else:
                         wait_time = WAIT_TIME
 
@@ -696,7 +701,7 @@ try:
                     ser.write(data_to_arduino.encode('utf-8'))
                     print(f'Message sent to serial: {data_to_arduino}')
 
-                if (data_from_arduino == 'OK' or time.time() - time_send_messege >= wait_time) and wait_flag == 1 and test_flag == 0:
+                if ((time.time() - time_send_messege > min_time and data_from_arduino == 'OK') or (time.time() - time_send_messege >= wait_time)) and wait_flag == 1 and test_flag == 0:
                     corect_flag = 1
                     wait_flag = 0
 
