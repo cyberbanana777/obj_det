@@ -149,7 +149,7 @@ def corection_way():
 
     if color == 'Green':
         objects = color_objects
-        limit = 0.03
+        limit = 0.02
     else:
         objects = black_objects_roi
 
@@ -367,6 +367,9 @@ def way_function(shape, color, do_color):
             pass
 
     if flag_case_logic == 1:
+        print('Flag_to_finish:', flag_way_to_finish)
+        print('Flag_with_green:', flag_way_with_green)
+
 
         if color == 'Green':
             function_to_move = 8
@@ -390,6 +393,7 @@ def way_function(shape, color, do_color):
         elif shape == 'right_E_crossroad':
             if flag_way_to_finish == 1:
                 count_right_E_crossroad += 1
+                print('^^^^Count_right_E_crossroad', count_right_E_crossroad)
                 if count_right_E_crossroad >= 2:
                     function_to_move = 1
 
@@ -629,11 +633,12 @@ try:
 
                     print(f'Shape: {shape}')
 
-                    if (shape != 0 and shape != 'unknown' and shape != 'line') or (color != 0 and do_color == 1):
+                    if (shape != 0 and shape != 'unknown' and shape != 'line') or (color != 0):
                         corect_flag = 1
                         corect_flag_center = 1
                         if shape == 'dead_end' or color == 'Green' or color == 'Red':
                             corect_flag_center = 0
+                            print('MARCK!')
 
                         mess_flag = 1
 
@@ -650,12 +655,19 @@ try:
                 # корректировка положения макленькими поворотами
                 if corect_flag == 1 and wait_flag == 0 and test_flag == 0:
                    corect_flag = corection_way()
-
+                   if color == 0 and shape != 0:
+                       corect_flag_center = corection_way_center(DEMENTION, DEMENTION//2 + 1, matrix)
                 # отправка сообщения на ардуино
                 if corect_flag == 0 and corect_flag_center == 0 and wait_flag == 0 and mess_flag == 1 and test_flag == 0:
 
                     shape = recognize_shape(id_matrix, black_objects, matrix)
+                    print('Shape:', shape)
                     color = recognize_color(color_objects)
+                    print('Color:', color)
+
+                    if do_color == 0 and color != 0:
+                        function_to_move = 0
+
                     function_to_move, function_to_grab = way_function(
                         shape, color, do_color)
 
@@ -669,8 +681,11 @@ try:
 
                     time_send_messege = time.time()
 
-                    if function_to_move == 0:
-                        wait_time = 1
+                    if function_to_move == 0 and color != 0:
+                        wait_time = 0.2
+                        min_time = 0.2
+                    elif function_to_move == 0:
+                        wait_time = 2
                         min_time = 0.5
                     elif function_to_move == 8:
                         wait_time = 15
@@ -682,8 +697,9 @@ try:
                     elif function_to_move == 4:
                         wait_time = 3
                     elif function_to_move == 11 or function_to_move == 12 or function_to_move == 13 or function_to_move == 14:
-                        min_time = 0
+                        wait_time = 0.5
                     else:
+                        min_time = 0.5
                         wait_time = WAIT_TIME
 
                     wait_flag = 1
@@ -713,7 +729,9 @@ try:
                 if time.time() - platform_time >= 10 and platform_pred_flag == 1:
                     platform_flag = 1
 
-
+                print('###Flag_to_finish:', flag_way_to_finish)
+                print('###Flag_with_green:', flag_way_with_green)
+                print('Flag_case_logic', flag_case_logic)
                 print('Pred_platfom', platform_pred_flag)
                 print('Platform_flag', platform_flag)
                 print('Time:', time.time() - start_time)
