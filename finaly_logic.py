@@ -60,6 +60,7 @@ matrix = []
 id_matrix = ''
 DEMENTION = 15
 WAIT_TIME = 4
+pred_shape = 0
 
 # считывает скорость для моторов
 
@@ -327,6 +328,7 @@ def way_function(shape, color, do_color):
     global flag_way_with_green
     global count_right_E_crossroad
     global flag_way_with_green
+    global pred_shape
     function_to_move = 0
     function_to_grab = 0
 
@@ -392,11 +394,14 @@ def way_function(shape, color, do_color):
             function_to_move = 2
         elif shape == 'right_E_crossroad':
             if flag_way_to_finish == 1:
-                count_right_E_crossroad += 1
-                print('^^^^Count_right_E_crossroad', count_right_E_crossroad)
-                if count_right_E_crossroad >= 2:
+                print('Pred_shape:', pred_shape)
+                print('^^^Count_right_E_crossroad:', count_right_E_crossroad)
+                
+                if pred_shape != 'right_E_crossroad':
+                    count_right_E_crossroad += 1
+                if count_right_E_crossroad == 2:
                     function_to_move = 1
-
+        
             if flag_way_with_green == 1:
                 function_to_move = 1
             pass
@@ -655,8 +660,8 @@ try:
                 # корректировка положения макленькими поворотами
                 if corect_flag == 1 and wait_flag == 0 and test_flag == 0:
                    corect_flag = corection_way()
-                   if color == 0 and shape != 0:
-                       corect_flag_center = corection_way_center(DEMENTION, DEMENTION//2 + 1, matrix)
+                
+
                 # отправка сообщения на ардуино
                 if corect_flag == 0 and corect_flag_center == 0 and wait_flag == 0 and mess_flag == 1 and test_flag == 0:
 
@@ -664,12 +669,14 @@ try:
                     print('Shape:', shape)
                     color = recognize_color(color_objects)
                     print('Color:', color)
+                    function_to_move, function_to_grab = way_function(shape, color, do_color)
+                    
+                    pred_shape = shape
 
                     if do_color == 0 and color != 0:
                         function_to_move = 0
 
-                    function_to_move, function_to_grab = way_function(
-                        shape, color, do_color)
+                    
 
                     data_to_arduino = "$" + str(function_to_move) + ";" + str(function_to_grab) + ";" + \
                         str(correction_speed_to_right_wheels) + ";" + \
